@@ -1,10 +1,13 @@
 # POKER PREFLOP TRAINER
-
+import os
 from blocks import *
 
-session = Session(handcount=10)
-session.play()
+# clear the terminal window
+os.system('clear')
 
+# instantiate and then play a session
+session = Session(handcount=5)
+session.play()
 
 """
 TODO
