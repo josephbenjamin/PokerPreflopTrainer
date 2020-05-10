@@ -1,5 +1,7 @@
 import random
-from strategy import *
+import csv
+from datetime import datetime
+from strategy import UTG_OR_grid
 
 class Card:
     suitList = ["Clubs", "Diamonds", "Hearts", "Spades"]
@@ -93,30 +95,27 @@ class Session:
         self.score = 0
         print '\n'
         print "POKER PREFLOP TRAINER"
-        print ">> A New session has been initiated"
-        print ">> Length: {} hands \n".format(self.handcount)
+        print "A new {} hand session has been initiated\n".format(self.handcount)
 
     def play(self):
-
         for i in range(1,self.handcount + 1):
             decision = ""
             player = Player('me')
             deck = Deck()
             deck.shuffle()
 
-            # print "\n" + "Hand {}".format(i)
             player.drawtoHand(deck,count=2)
-            #player.showPosition()
-            #player.showHand(short=True)
 
-            # ultra short info
-            print "h" + str(i) + " :: " + player.positionlabel + " :: " + shortenHand(player.hand)
+            prompt = "h" + str(i) + " :: " + player.positionlabel + " :: " + shortenHand(player.hand)
 
             while True:
                 try:
-                    decision_string = raw_input("b/f? ")
+                    decision_string = raw_input(prompt + " ? ")
                 except ValueError:
-                    print("Sorry, I don't understand that. Bet or Fold. ")
+                    print("Sorry, I don't understand that. Bet or Fold? ")
+                    continue
+                if decision_string == "":
+                    print("Sorry, I don't understand that. Bet or Fold? ")
                     continue
                 if decision_string[0].lower() == "f":
                     decision = 0
@@ -136,20 +135,33 @@ class Session:
             if decision == "quit":
                 print "You chose to quit. Bye for now."
                 break
-            elif decision == strategise(player.hand, UTG_OR_grid):
-                print "CORRECT"
-                self.score += 1
-                continue
             else:
-                print "INCORRECT"
-                continue
+                strategy = strategise(player.hand, UTG_OR_grid)
+                # log the hand and decision
+                logHand(player,decision,strategy,logfile="./logs/log_default.csv")
+                if decision == strategise(player.hand, UTG_OR_grid):
+                    print ">> CORRECT"
+                    self.score += 1
+                else: print ">> INCORRECT"
+            continue
         # indicate that all hands are complete
         print "\n" +  ("{} out of {} hands completed.".format(i,self.handcount))
         print ("SCORE: " + str(self.score / float(self.handcount) * 100) + "%")
 
+
+
 #####################
 # GENERAL FUNCTIONS #
 #####################
+
+def logHand(player, decision, strategy, logfile="./logs/log_default.csv"):
+    dateTimeObj = datetime.now()
+    timestampStr = dateTimeObj.strftime("%Y-%m-%d %H:%M:%S")
+    # TIMESTAMP, POSITION, HAND, DECISION, STRATEGY, CORRECT
+    row_entry = [timestampStr,player.positionlabel, shortenHand(player.hand), decision, strategy, decision == strategy]
+    with open(logfile, "a") as f:
+        writer = csv.writer(f)
+        writer.writerow(row_entry)
 
 def strategise(hand, strategy_grid):
     gridpos = ""
