@@ -6,20 +6,25 @@ from blocks import *
 os.system('clear')
 
 # instantiate and then play a session
-session = Session(handcount=5)
-session.play()
+#session = Session(handcount=5)
+#session.play()
+# for i in range(1,5):
+#     sitch = Situation()
+#     sitch.getDecision()
+#     sitch.evaluateDecision()
+#     if sitch.decision == "quit":
+#         break
+#     else: sitch.logSituation()
+sesh = Session(handcount=2, positionList=["UTG", "MID"], typeList=["OR"], shufflepos=False,shuffletype=False)
+sesh.runSession()
+sesh.summariseSession()
+
 
 """
 TODO
 
-1. generate log of games
-POSITION :: SHORTHAND :: DECISION :: STRATEGY :: CORRECT :: TIMESTAMP
-UTG      :: AAo       :: "bet"    :: 1        :: TRUE    :: 2020-05-10_010136
-
-2. ability to switch positions at the table and then use the new correct strategy grid
-
-3. build more strategy tables
-
-4. quiz one position but OR / ROL / 3BET scenarios
+A. prepare more strategy_grids
+B. create unit tests
+C.
 
 """
