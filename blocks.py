@@ -45,7 +45,7 @@ class Deck:
         return s
 
     def build(self):
-        for s in range(0,3):
+        for s in range(0,4):
             for v in range(1, 14):
                 self.cards.append(Card(s, v))
 
