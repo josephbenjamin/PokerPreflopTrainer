@@ -5,7 +5,7 @@ from blocks import *
 # clear the terminal window
 os.system('clear')
 
-sesh = Session(handcount=25, positionList=["UTG", "MID"], typeList=["OR"], shufflepos=True,shuffletype=False)
+sesh = Session(handcount=25, positionList=["UTG", "MID"], typeList=["OR"], shufflepos=True,shuffletype=False, mode="edges")
 sesh.runSession()
 sesh.summariseSession()
 

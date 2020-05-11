@@ -94,7 +94,7 @@ class Player:
 class Session:
     # a new Session class, that is designed to be even more modular, making use of the Situation class so streamline the flow
 
-    def __init__(self, handcount=10, positionList=["UTG"], shufflepos=False, typeList=["OR", "ROL"], shuffletype=False):
+    def __init__(self, handcount=10, positionList=["UTG"], shufflepos=False, typeList=["OR", "ROL"], shuffletype=False, mode="all"):
         self.handcount = handcount
         self.handsplayed = 0
         self.currenthand = 1
@@ -109,6 +109,8 @@ class Session:
         self.type = 0
         self.typelabel = self.typeList[self.type]
         self.shuffletype = shuffletype
+
+        self.mode = mode # all or edges passed through to session
         self.printHeader()
 
     def printHeader(self):
@@ -118,11 +120,12 @@ class Session:
         print "  Situation types to be tested: {}".format(self.typeList)
         print "  Randomise position: {}".format(self.shufflepos)
         print "  Randomise situation type: {}".format(self.shuffletype)
+        print "  Mode: {}".format(self.mode)
         print ""
 
     def runSession(self):
         for i in range(0,self.handcount):
-            sitch = Situation(name=self.currenthand, positionlabel = self.positionlabel, typelabel = self.typelabel)
+            sitch = Situation(name=self.currenthand, positionlabel = self.positionlabel, typelabel = self.typelabel, mode=self.mode)
             sitch.getDecision()
             sitch.evaluateDecision()
 
@@ -162,8 +165,9 @@ class Session:
 
 class Situation():
 
-    def __init__(self, name, positionlabel, typelabel):
+    def __init__(self, name, positionlabel, typelabel, mode="all"):
         self.name = name
+        self.mode = mode
         self.decision = False
         self.strategy = False
         self.strategy_grid = []
@@ -171,11 +175,36 @@ class Situation():
         self.player = Player('me')
         self.typelabel = typelabel
         self.positionlabel = positionlabel
+        self.assignStrategyGrid()
         # ignore player possition attribute: situation now has its own positionlabel which is used for getting strategy_grid
         # self.player.sitdown(self.position)
         self.deck = Deck()
         self.deck.shuffle()
-        self.player.drawtoHand(self.deck,count=2)
+
+        if self.mode == "all": # draw a random hand
+            self.player.drawtoHand(self.deck,count=2)
+        elif self.mode == "edges": # draw from edge hands
+            counter = 0
+            limit = 169
+            while counter <= limit: # keep trying until limit
+                self.deck = Deck() # reset the Deck
+                self.deck.shuffle()
+                self.player.hand = []
+                self.player.drawtoHand(self.deck,count=2)
+                print shortenHand(self.player.hand)
+                if filterise(self.player.hand,self.strategy_grid) == 1:
+                    break
+                else:
+                    counter += 1
+                    continue
+
+        else:
+            self.player.drawtoHand(self.deck,count=2)
+
+    def assignStrategyGrid(self):
+        pos = str(self.positionlabel)
+        typ = str(self.typelabel)
+        self.strategy_grid = strategy_grid_dict[pos][typ]
 
     def getDecision(self):
         prompt = "#" + str(self.name) + " : " + self.positionlabel + " : " + self.typelabel + " : " + shortenHand(self.player.hand)
@@ -207,9 +236,6 @@ class Situation():
         # once a decision has been made using situation.getDecision, this function decides what to do next and returns a True or False
 
         assert self.decision, "Attempted to evaluateDecision prior to decision being made"
-
-        pos = str(self.positionlabel); typ = str(self.typelabel)
-        self.strategy_grid = strategy_grid_dict[pos][typ]
 
         # assert len(self.strategy_grid)==13, "Required strategy grid not found: " + pos + "_" +typ +"_grid"
         if len(self.strategy_grid) != 13:
@@ -269,6 +295,7 @@ def logHand(player, decision, strategy, logfile="./logs/log_default.csv"):
         writer.writerow(row_entry)
 
 def strategise(hand, strategy_grid):
+    # compares hand with strategy_grid and returns strategy boolean
     gridpos = ""
     suited = False
     card1 = hand[0]
@@ -297,3 +324,36 @@ def shortenHand(hand):
         elif pair: shorthand = shorthand + " "
         else: shorthand = shorthand + "o"
     return shorthand
+
+def filterise(hand, strategy_grid):
+    # compares hand with a strategy_grid and returns a filter boolean
+    gridpos = ""
+    suited = False
+    card1 = hand[0]
+    card2 = hand[1]
+    if card1.suit == card2.suit: suited = True
+    gridpos = [card1.value, card2.value]
+    if suited: gridpos.sort()
+    else: gridpos.sort(reverse=True)
+    row = 13 - gridpos[1]
+    col = 13 - gridpos[0]
+    edge_filter = getStrategyEdges(strategy_grid)
+    return edge_filter[row][col]
+
+def getStrategyEdges(strategy_grid):
+    # returns a 13x13 array that contain a 1 whenever any of the neighboring 8 elements are different to it.
+    inputGrid = strategy_grid
+    outputGrid = [[0 for i in xrange(13)] for j in xrange (13) ]
+    for i in range(0,13):
+        for j in range(0,13): # iterate across output Grid
+            outputGrid[i][j] = isEdge(inputGrid, i, j)
+    return outputGrid
+
+def isEdge(array, x, y):
+    edge = 0
+    for i in range (-1,2):
+        for j in range (-1,2):
+            testi = min(max(0,x+i),len(array)-1)
+            testj = min(max(0,y+j),len(array)-1)
+            if array[testi][testj] != array[x][y]: edge = 1
+    return edge
