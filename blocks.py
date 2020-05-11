@@ -181,6 +181,8 @@ class Situation():
         self.deck = Deck()
         self.deck.shuffle()
 
+        # getSituationHand() to be created
+        # here
         if self.mode == "all": # draw a random hand
             self.player.drawtoHand(self.deck,count=2)
         elif self.mode == "edges": # draw from edge hands
@@ -191,7 +193,6 @@ class Situation():
                 self.deck.shuffle()
                 self.player.hand = []
                 self.player.drawtoHand(self.deck,count=2)
-                print shortenHand(self.player.hand)
                 if filterise(self.player.hand,self.strategy_grid) == 1:
                     break
                 else:
