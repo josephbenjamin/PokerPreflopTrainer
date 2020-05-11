@@ -283,13 +283,17 @@ def strategise(hand, strategy_grid):
 
 def shortenHand(hand):
     suited = False
+    pair = False
     if len(hand) !=2:
         raise Exception("Only two-card hands can be shorthanded")
     else:
         if hand[0].suit == hand[1].suit:
             suited = True
+        if hand[0].value == hand[1].value:
+            pair = True
         hand.sort()
         shorthand = hand[1].shortrankList[hand[1].value] + hand[0].shortrankList[hand[0].value]
         if suited: shorthand = shorthand + "s"
+        elif pair: shorthand = shorthand + " "
         else: shorthand = shorthand + "o"
     return shorthand
