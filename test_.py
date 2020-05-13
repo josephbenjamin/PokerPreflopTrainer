@@ -14,10 +14,28 @@ def test_deck_length():
     testdeck.shuffle()
     assert len(testdeck.cards) == 52
 
-def test_deck_empty():
+def test_deck_isEmpty():
     # draw 52 cards and test empty property
     testdeck = Deck()
     testdeck.shuffle()
     for card in range (0,len(testdeck.cards)):
         testdeck.drawCard()
     assert testdeck.isEmpty()
+
+def test_deck_drawfromempty():
+    testdeck = Deck()
+    testdeck.shuffle()
+    # empty the deck
+    for card in range(0,len(testdeck.cards)):
+        testdeck.drawCard()
+
+    # draw from empty Deck
+    testdeck.drawCard()
+
+def test_deck_show():
+    testdeck = Deck()
+    testdeck.show()
+
+def test_player_attributes():
+    player = Player()
+    
