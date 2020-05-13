@@ -58,7 +58,9 @@ class Deck:
             self.cards[i], self.cards[r] = self.cards[r], self.cards[i] # swap card i with r
 
     def drawCard(self):
-        return self.cards.pop()
+        if self.isEmpty(): return
+        else:
+            return self.cards.pop()
 
     def isEmpty(self):
         return (len(self.cards) == 0)

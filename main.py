@@ -9,6 +9,9 @@ sesh = Session(handcount=25, positionList=["UTG", "MID"], typeList=["OR"], shuff
 sesh.runSession()
 sesh.summariseSession()
 
+
+
+
 """
 TODO
 
